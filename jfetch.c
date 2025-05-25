@@ -316,7 +316,7 @@ void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][BUFFERSIZE], size_t* 
         {
             current_mount++;
             char dev[BUFFERSIZE] = {0};
-            for(int i=0;(i<BUFFERSIZE)&&(current_mount[i]!=' ');i++)
+            for(int i=0;(i<BUFFERSIZE)&& !(current_mount[i]==' '&&current_mount[i-1]!='\\');i++)
             {
                 dev[i] = current_mount[i];
             }
