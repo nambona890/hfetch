@@ -1,7 +1,9 @@
-#ifndef JFETCH_H
-#define JFETCH_H
+#ifndef HFETCH_H
+#define HFETCH_H
 
 #include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define BUFFERSIZE 256 // Default length for all used buffers
 #define PADDING 44     // Jorb size
@@ -14,7 +16,6 @@
 #define POS "\033[%d;%dH" // Move cursor to y;x 
 
 #define NULL_RETURN(ptr) do { if (ptr == NULL) return; } while (0)
-#define NULL_RETURN_0(ptr) do { if (ptr == NULL) return 0; } while (0)
 #define UNUSED_ARG(arg) do { (void)(arg); } while (0)
 
 typedef struct system_stats {

@@ -9,8 +9,8 @@
 #include <sys/sysinfo.h>
 #include <sys/statvfs.h>
 
-#include "jorb.h" // Jorb animation object 
-#include "jfetch.h"
+#include "cliorb.h" // Cliorb animation object 
+#include "hfetch.h"
 
 // IMPLEMENTED:
 // Username [x]
@@ -441,7 +441,7 @@ void clear_screen(int columns, int lines) {
 void print_logo() {
     //printf(POS "%s", 0, 0, arch_logo_8x15);
     //printf(POS COLOR_CYAN "%s" COLOR_RESET, 0, 0, arch_logo_wide);
-    printf(yield_frame(&jorb));
+    printf(yield_frame(&cliorb));
 }
 
 void draw_line(int length) {
@@ -454,7 +454,7 @@ void print_stats(system_stats stats) {
     int line = 1, 
         column = PADDING + 2;
     int namelen = strlen(stats.user_name) + strlen(stats.host_name) + 1;
-    printf(POS COLOR_RESET COLOR_CYAN "%*sjfetch🌠🎀" COLOR_RESET, line++, column, (namelen - 8) / 2, "");
+    printf(POS COLOR_RESET COLOR_CYAN "%*shfetch📚⚔️" COLOR_RESET, line++, column, (namelen - 8) / 2, "");
     printf(POS COLOR_CYAN "%s" COLOR_RESET "@" COLOR_CYAN "%s" COLOR_RESET, line++, column, stats.user_name, stats.host_name);
     printf(POS, line++, column); 
     draw_line(namelen);
