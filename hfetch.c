@@ -509,7 +509,7 @@ int main() {
         print_stats(sysstats);
         print_logo();
         fflush(stdout);
-        if (frame % (FPS / 2) == 0) // update stats every 0.5s
+        if (frame % (FPS / 4) == 0) // update stats every 0.25s
             update_dynamic_stats(&sysstats);
         usleep(1000000 / FPS);
         frame++;
