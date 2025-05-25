@@ -51,12 +51,12 @@ print(convert_frame("./images/frame01.png"))
 #"""
 frame_paths = [f"./images/frame{i:02}.png" for i in range(1, 30)]
 
-cfile = open("../jorb.h", "w")
+cfile = open("../cliorb.h", "w")
 
-cfile.write('#ifndef JORB_H\n')
-cfile.write('#define JORB_H\n')
-cfile.write('#include "jfetch.h"\n\n')
-cfile.write('animation_object jorb = {\n')
+cfile.write('#ifndef CLIORB_H\n')
+cfile.write('#define CLIORB_H\n')
+cfile.write('#include "hfetch.h"\n\n')
+cfile.write('animation_object cliorb = {\n')
 cfile.write('    .current_frame = 0,\n')
 cfile.write('    .frame_count = 29,\n')
 cfile.write('    .frames = {\n')
