@@ -465,14 +465,14 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "Shell:    " COLOR_RESET " %s", line++, column, stats.shell_name);
     printf(POS COLOR_CYAN "Terminal: " COLOR_RESET " %s", line++, column, stats.terminal_name);
     printf(POS COLOR_CYAN "CPU:      " COLOR_RESET " %s", line++, column, stats.cpu_name);
-    printf(POS COLOR_CYAN "CPU Usage:" COLOR_RESET " %s", line++, column, stats.cpu_usage);
-    printf(POS COLOR_CYAN "Memory:   " COLOR_RESET " %s", line++, column, stats.ram_usage);
-    printf(POS COLOR_CYAN "Swap:     " COLOR_RESET " %s", line++, column, stats.swap_usage);
+    printf(POS COLOR_CYAN "CPU Usage:" COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
+    printf(POS COLOR_CYAN "Memory:   " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
+    printf(POS COLOR_CYAN "Swap:     " COLOR_RESET " %s   ", line++, column, stats.swap_usage);
     for(int i=0;i<stats.mount_count;i++)
-        printf(POS COLOR_CYAN "Disk:     " COLOR_RESET " %s", line++, column, stats.disk_usage[i]);
-    printf(POS COLOR_CYAN "Processes:" COLOR_RESET " %s", line++, column, stats.process_count);
+        printf(POS COLOR_CYAN "Disk:     " COLOR_RESET " %s  ", line++, column, stats.disk_usage[i]);
+    printf(POS COLOR_CYAN "Processes:" COLOR_RESET " %s    ", line++, column, stats.process_count);
     printf(POS COLOR_CYAN "Uptime:   " COLOR_RESET " %s", line++, column, stats.uptime);
-    printf(POS COLOR_CYAN "Battery:  " COLOR_RESET " %s", line++, column, stats.battery_charge);
+    printf(POS COLOR_CYAN "Battery:  " COLOR_RESET " %s   ", line++, column, stats.battery_charge);
 }
 
 void handle_exit(int signal) {
