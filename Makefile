@@ -1,7 +1,7 @@
 CFLAGS ?= -O3
 
-hfetch: jfetch.c
+hfetch: hfetch.c
 	${CC} ${CFLAGS} $^ -o $@
 
 clean:
-	rm -f jfetch
+	rm -f hfetch
