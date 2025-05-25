@@ -268,22 +268,75 @@ void fetch_swap_usage(char *swap_usage) {
     fclose(f);
 }
 
-void fetch_disk_usage(char *disk_usage) {
+void fetch_disk_usage(char *disk_usage, const char* vfspath, const char* devpath) {
     NULL_RETURN(disk_usage);
-    strncpy(disk_usage, "Unknown", BUFFERSIZE);
 
     struct statvfs data;
-    if (!statvfs("/", &data)) {
+    if (!statvfs(vfspath, &data)) {
         size_t total_bytes = data.f_frsize * data.f_blocks;
         size_t used_bytes = total_bytes - data.f_frsize * data.f_bfree;
 
         snprintf(disk_usage, BUFFERSIZE,
-            "%.1fGB / %.1fGB (%.0f%%)", 
+            "%.1fGB / %.1fGB (%.0f%%) - %s at %s", 
             (double)used_bytes / 1024 / 1024 / 1024, 
             (double)total_bytes / 1024 / 1024 / 1024,
-            (double)used_bytes * 100 / total_bytes
+            (double)used_bytes * 100 / total_bytes,
+            devpath,
+            vfspath
         );
     }
+}
+
+void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][BUFFERSIZE], size_t* mount_count)
+{
+    NULL_RETURN(mount_count);
+    size_t mc = 0;
+    *mount_count = mc;
+    NULL_RETURN(disk_usage);
+    for(int i=0;i<BUFFERSIZE;i++)
+    {
+        strncpy(disk_usage[i], "Unknown", BUFFERSIZE);
+    }
+
+    FILE *f = fopen("/proc/mounts", "r");
+
+    dynamic_string mount_list = new_dynamic_string("");
+
+
+
+
+    if (f != NULL) {
+        char buffer[BUFFERSIZE+1] = {0};
+        while(fgets(buffer,BUFFERSIZE,f))
+        {
+            append_dynamic_string(&mount_list,buffer);
+        }
+        char* current_mount = strstr(mount_list.str,"\n/dev/sd");
+        while(current_mount != NULL)
+        {
+            current_mount++;
+            char dev[BUFFERSIZE] = {0};
+            for(int i=0;(i<BUFFERSIZE)&&(current_mount[i]!=' ');i++)
+            {
+                dev[i] = current_mount[i];
+            }
+            char mount[BUFFERSIZE] = {0};
+            char* mount_loc = strstr(current_mount, " /");
+            mount_loc++;
+            for(int i=0;(i<BUFFERSIZE)&&(mount_loc[i]!=' ');i++)
+            {
+                mount[i] = mount_loc[i];
+            }
+            current_mount = strstr(current_mount,"\n/dev/sd");
+            fetch_disk_usage(disk_usage[mc],mount,dev);
+            mc++;
+        }
+    }
+    
+
+    free_dynamic_string(&mount_list);
+    fclose(f);
+    *mount_count = mc;
 }
 
 void fetch_process_count(char *process_count) {
@@ -342,7 +395,7 @@ void fetch_stats(system_stats *stats) {
     fetch_cpu_usage(stats->cpu_usage);
     fetch_ram_usage(stats->ram_usage);
     fetch_swap_usage(stats->swap_usage);
-    fetch_disk_usage(stats->disk_usage);
+    fetch_disk_usage_multiple(stats->disk_usage,&stats->mount_count);
     fetch_process_count(stats->process_count);
     fetch_uptime(stats->uptime);
     fetch_battery_charge(stats->battery_charge);
@@ -415,7 +468,8 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "CPU Usage:" COLOR_RESET " %s", line++, column, stats.cpu_usage);
     printf(POS COLOR_CYAN "Memory:   " COLOR_RESET " %s", line++, column, stats.ram_usage);
     printf(POS COLOR_CYAN "Swap:     " COLOR_RESET " %s", line++, column, stats.swap_usage);
-    printf(POS COLOR_CYAN "Disk:     " COLOR_RESET " %s", line++, column, stats.disk_usage);
+    for(int i=0;i<stats.mount_count;i++)
+        printf(POS COLOR_CYAN "Disk:     " COLOR_RESET " %s", line++, column, stats.disk_usage[i]);
     printf(POS COLOR_CYAN "Processes:" COLOR_RESET " %s", line++, column, stats.process_count);
     printf(POS COLOR_CYAN "Uptime:   " COLOR_RESET " %s", line++, column, stats.uptime);
     printf(POS COLOR_CYAN "Battery:  " COLOR_RESET " %s", line++, column, stats.battery_charge);
