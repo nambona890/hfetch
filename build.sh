@@ -1,3 +1,3 @@
 set -e 
 
-gcc -o jfetch -Wall -Wextra jfetch.c
+gcc -o hfetch -Wall -Wextra hfetch.c
