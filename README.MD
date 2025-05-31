@@ -10,7 +10,7 @@ Displays information about your operating system (Linux-only), software and hard
 
 You can build the executable using `make` or by running the `./build.sh` script.
 
-If you use an Arch-based system you can install the original jfetch from the [AUR](https://aur.archlinux.org/packages/jellyfetch-git)
+If you use an Arch-based system you can install it from the [AUR](https://aur.archlinux.org/packages/hfetch-git)
 
 hfetch has no configuration files, so if you want to remove/rearrange the outputs you will need to edit the prints_stats function and recompile the program.
 
