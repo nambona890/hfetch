@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 #define BUFFERSIZE 256 // Default length for all used buffers
-#define PADDING 44     // Jorb size
+#define PADDING 44     // Cliorb size
 #define FPS 20         // Speed of animation/stats reloading
 
 // Escape codes for drawing 
