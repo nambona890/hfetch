@@ -21,5 +21,5 @@ In order to tinker with it you will need to install numpy and opencv as dependen
 
 # Optional dependencies
 
-* mesa-utils (For detecting AMD GPUs)
+* amdgpu_top (For detecting AMD GPUs)
 * nvidia / nvidia-open (For detecting NVIDIA GPUs)

@@ -217,22 +217,24 @@ void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_c
 
     size_t currentgpu = 0;
 
-    FILE *f = popen("glxinfo", "r");
+    FILE *f = popen("amdgpu_top -d", "r");
     if (f)
     {
-        dynamic_string glxinfo_output = new_dynamic_string("");
+        dynamic_string amdgpu_top_output = new_dynamic_string("");
         char buffer[BUFFERSIZE] = {0};
         while(!feof(f))
         {
             fread(buffer,1,BUFFERSIZE,f);
-            append_dynamic_string(&glxinfo_output,buffer);
+            append_dynamic_string(&amdgpu_top_output,buffer);
         }
-        char* glxinfo_string_iterator = glxinfo_output.str;
-        while(glxinfo_string_iterator = strstr(glxinfo_string_iterator,"    Device: "))
+        const char beginning_string[] = "device_name: \"";
+        const char end_string[] = "\",";
+        char* amdgpu_top_string_iterator = amdgpu_top_output.str;
+        while(amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,beginning_string))
         {
-            glxinfo_string_iterator+=12;
-            const char* glxinfo_substr_end = strstr(glxinfo_string_iterator," (");
-            strncpy(gpu_name[currentgpu],glxinfo_string_iterator,(size_t)(glxinfo_substr_end-glxinfo_string_iterator));
+            amdgpu_top_string_iterator+=sizeof(beginning_string)-1;
+            const char* amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,end_string);
+            strncpy(gpu_name[currentgpu],amdgpu_top_string_iterator,(size_t)(amdgpu_top_substr_end-amdgpu_top_string_iterator));
             currentgpu++;
         }
     }
