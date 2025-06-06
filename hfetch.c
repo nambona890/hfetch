@@ -535,7 +535,8 @@ void print_stats(system_stats stats) {
     for(int i=0;i<stats.mount_count;i++)
     {
         printf(POS COLOR_CYAN "Disk:      " COLOR_RESET " %s", line++, column, stats.disk_usage[i][0]);
-        printf(POS COLOR_CYAN "Disk Usage:" COLOR_RESET " %s  ", line++, column, stats.disk_usage[i][1]);
+        if(!stats.flags.disable_print_disk_usage)
+            printf(POS COLOR_CYAN "Disk Usage:" COLOR_RESET " %s  ", line++, column, stats.disk_usage[i][1]);
     }
     printf(POS COLOR_CYAN "Processes: " COLOR_RESET " %s    ", line++, column, stats.process_count);
     printf(POS COLOR_CYAN "Uptime:    " COLOR_RESET " %s", line++, column, stats.uptime);
@@ -557,9 +558,15 @@ void handle_exit(int signal) {
     exit(0);
 }
 
-int main() {
+int main(int argc, char** argv) {
     signal(SIGINT, handle_exit);
     system("tput civis");
+
+    for(int i=1;i<argc;i++)
+    {
+        if(strcmp(argv[i],"-ndu")==0)
+            sysstats.flags.disable_print_disk_usage = TRUE;
+    }
 
     fetch_stats(&sysstats);
 ///*

@@ -18,6 +18,10 @@
 #define NULL_RETURN(ptr) do { if (ptr == NULL) return; } while (0)
 #define UNUSED_ARG(arg) do { (void)(arg); } while (0)
 
+typedef __uint8_t BOOL;
+#define TRUE 1
+#define FALSE 0
+
 typedef struct system_stats {
     char user_name[BUFFERSIZE],
          host_name[BUFFERSIZE],
@@ -39,8 +43,7 @@ typedef struct system_stats {
     size_t mount_count,gpu_count;
     struct
     {
-        unsigned amdgpu_top : 1;
-        unsigned nvidia_smi : 1;
+        BOOL disable_print_disk_usage : 1;
     } flags;
 } system_stats;
 
