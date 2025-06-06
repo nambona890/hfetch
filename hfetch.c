@@ -539,7 +539,8 @@ void print_stats(system_stats stats) {
     }
     printf(POS COLOR_CYAN "Processes: " COLOR_RESET " %s    ", line++, column, stats.process_count);
     printf(POS COLOR_CYAN "Uptime:    " COLOR_RESET " %s", line++, column, stats.uptime);
-    printf(POS COLOR_CYAN "Battery:   " COLOR_RESET " %s   ", line++, column, stats.battery_charge);
+    if(strcmp(stats.battery_charge,DEFAULTSTRING)!=0)
+        printf(POS COLOR_CYAN "Battery:   " COLOR_RESET " %s   ", line++, column, stats.battery_charge);
 }
 
 void handle_exit(int signal) {
