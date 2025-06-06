@@ -208,6 +208,60 @@ void fetch_cpu_usage(char *cpu_usage) {
     fclose(f);
 }
 
+void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_count) {
+    NULL_RETURN(gpu_name);
+    for(int i=0;i<BUFFERSIZE;i++)
+    {
+        strncpy(gpu_name[i], "Unknown", BUFFERSIZE);
+    }
+
+    size_t currentgpu = 0;
+
+    FILE *f = popen("glxinfo", "r");
+    if (f)
+    {
+        dynamic_string glxinfo_output = new_dynamic_string("");
+        char buffer[BUFFERSIZE] = {0};
+        while(!feof(f))
+        {
+            fread(buffer,1,BUFFERSIZE,f);
+            append_dynamic_string(&glxinfo_output,buffer);
+        }
+        char* glxinfo_string_iterator = glxinfo_output.str;
+        while(glxinfo_string_iterator = strstr(glxinfo_string_iterator,"    Device: "))
+        {
+            glxinfo_string_iterator+=12;
+            const char* glxinfo_substr_end = strstr(glxinfo_string_iterator," (");
+            strncpy(gpu_name[currentgpu],glxinfo_string_iterator,(size_t)(glxinfo_substr_end-glxinfo_string_iterator));
+            currentgpu++;
+        }
+    }
+    fclose(f);
+    
+    f = popen("nvidia-smi -L", "r");
+    if (f)
+    {
+        dynamic_string nvidia_smi_output = new_dynamic_string("");
+        char buffer[BUFFERSIZE] = {0};
+        while(!feof(f))
+        {
+            fread(buffer,1,BUFFERSIZE,f);
+            append_dynamic_string(&nvidia_smi_output,buffer);
+        }
+        char* nvidia_string_iterator = nvidia_smi_output.str;
+        while(nvidia_string_iterator = strstr(nvidia_string_iterator,": "))
+        {
+            nvidia_string_iterator+=2;
+            const char* nvidia_substr_end = strstr(nvidia_string_iterator," (UUID:");
+            strncpy(gpu_name[currentgpu],nvidia_string_iterator,(size_t)(nvidia_substr_end-nvidia_string_iterator));
+            nvidia_string_iterator = strstr(nvidia_string_iterator,"\n");
+            currentgpu++;
+        }
+    }
+    *gpu_count = currentgpu;
+    fclose(f);
+}
+
 void fetch_ram_usage(char *ram_usage) {
     NULL_RETURN(ram_usage);
     strncpy(ram_usage, "Unknown", BUFFERSIZE);
@@ -396,6 +450,7 @@ void fetch_stats(system_stats *stats) {
     fetch_ram_usage(stats->ram_usage);
     fetch_swap_usage(stats->swap_usage);
     fetch_disk_usage_multiple(stats->disk_usage,&stats->mount_count);
+    fetch_gpu_name_multiple(stats->gpu_names,&stats->gpu_count);
     fetch_process_count(stats->process_count);
     fetch_uptime(stats->uptime);
     fetch_battery_charge(stats->battery_charge);
@@ -466,6 +521,8 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "Terminal: " COLOR_RESET " %s", line++, column, stats.terminal_name);
     printf(POS COLOR_CYAN "CPU:      " COLOR_RESET " %s", line++, column, stats.cpu_name);
     printf(POS COLOR_CYAN "CPU Usage:" COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
+    for(int i=0;i<stats.gpu_count;i++)
+        printf(POS COLOR_CYAN "GPU:      " COLOR_RESET " %s  ", line++, column, stats.gpu_names[i]);
     printf(POS COLOR_CYAN "Memory:   " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
     printf(POS COLOR_CYAN "Swap:     " COLOR_RESET " %s   ", line++, column, stats.swap_usage);
     for(int i=0;i<stats.mount_count;i++)

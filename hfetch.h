@@ -34,8 +34,14 @@ typedef struct system_stats {
          process_count[BUFFERSIZE],
          uptime[BUFFERSIZE],
          battery_charge[BUFFERSIZE],
-         disk_usage[BUFFERSIZE][BUFFERSIZE];
-    size_t mount_count;
+         disk_usage[BUFFERSIZE][BUFFERSIZE],
+         gpu_names[BUFFERSIZE][BUFFERSIZE];
+    size_t mount_count,gpu_count;
+    struct
+    {
+        unsigned amdgpu_top : 1;
+        unsigned nvidia_smi : 1;
+    } flags;
 } system_stats;
 
 typedef struct animation_object {
@@ -75,7 +81,7 @@ void append_dynamic_string(dynamic_string* dest, const char* src)
     NULL_RETURN(dest);
     const size_t source_length = strlen(src);
     const size_t dest_length = strlen(dest->str);
-    const size_t combined_length = source_length+dest_length;
+    const size_t combined_length = source_length+dest_length+1;
     if(combined_length >= dest->reserved_size)
     {
         while(dest->reserved_size <= combined_length)
@@ -106,4 +112,4 @@ inline void free_dynamic_string(dynamic_string* dyn_str)
     free(dyn_str->str);
 }
 
-#endif // JFETCH_H
+#endif // HFETCH_H
