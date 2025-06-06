@@ -32,6 +32,8 @@
 
 static system_stats sysstats = { 0 }; 
 
+#define DEFAULTSTRING "Unknown"
+
 char *yield_frame(animation_object *ao) {
     char *frame = ao->frames[ao->current_frame];
     ao->current_frame = (ao->current_frame + 1) % ao->frame_count;
@@ -40,7 +42,7 @@ char *yield_frame(animation_object *ao) {
 
 void fetch_user_name(char *user_name) {
     NULL_RETURN(user_name);
-    strncpy(user_name, "Unknown", BUFFERSIZE);
+    strncpy(user_name, DEFAULTSTRING, BUFFERSIZE);
 
     char *value = getenv("USER");
     if (value)
@@ -49,7 +51,7 @@ void fetch_user_name(char *user_name) {
 
 void fetch_host_name(char *host_name) {
     NULL_RETURN(host_name);
-    strncpy(host_name, "Unknown", BUFFERSIZE);
+    strncpy(host_name, DEFAULTSTRING, BUFFERSIZE);
 
     char buffer[BUFFERSIZE] = { 0 };
     if (!gethostname(buffer, BUFFERSIZE)) {
@@ -60,7 +62,7 @@ void fetch_host_name(char *host_name) {
 
 void fetch_datetime(char *datetime) {
     NULL_RETURN(datetime);
-    strncpy(datetime, "Unknown", BUFFERSIZE);
+    strncpy(datetime, DEFAULTSTRING, BUFFERSIZE);
 
     time_t dt;
     if (time(&dt) != -1) {
@@ -71,7 +73,7 @@ void fetch_datetime(char *datetime) {
 
 void fetch_os_name(char *os_name) {
     NULL_RETURN(os_name);
-    strncpy(os_name, "Unknown", BUFFERSIZE);
+    strncpy(os_name, DEFAULTSTRING, BUFFERSIZE);
     
     FILE *f = fopen("/etc/os-release", "r");
     if (!f)
@@ -96,7 +98,7 @@ void fetch_os_name(char *os_name) {
 
 void fetch_kernel_version(char *kernel_version) {
     NULL_RETURN(kernel_version);
-    strncpy(kernel_version, "Unknown", BUFFERSIZE);
+    strncpy(kernel_version, DEFAULTSTRING, BUFFERSIZE);
 
     struct utsname data;
     if (!uname(&data)) {
@@ -110,7 +112,7 @@ void fetch_kernel_version(char *kernel_version) {
 
 void fetch_desktop_name(char *desktop_name) {
     NULL_RETURN(desktop_name);
-    strncpy(desktop_name, "Unknown", BUFFERSIZE);
+    strncpy(desktop_name, DEFAULTSTRING, BUFFERSIZE);
 
     char *desktop = getenv("XDG_SESSION_DESKTOP");
     char *session = getenv("XDG_SESSION_TYPE");
@@ -122,7 +124,7 @@ void fetch_desktop_name(char *desktop_name) {
 
 void fetch_shell_name(char *shell_name) {
     NULL_RETURN(shell_name);
-    strncpy(shell_name, "Unknown", BUFFERSIZE);
+    strncpy(shell_name, DEFAULTSTRING, BUFFERSIZE);
 
     char *value = getenv("SHELL");
     value = strrchr(value, '/');
@@ -132,7 +134,7 @@ void fetch_shell_name(char *shell_name) {
 
 void fetch_terminal_name(char *terminal_name) {
     NULL_RETURN(terminal_name);
-    strncpy(terminal_name, "Unknown", BUFFERSIZE);
+    strncpy(terminal_name, DEFAULTSTRING, BUFFERSIZE);
 
     char buffer[BUFFERSIZE] = { 0 };
     snprintf(buffer, BUFFERSIZE, "/proc/%d/stat", getppid());
@@ -161,7 +163,7 @@ void fetch_terminal_name(char *terminal_name) {
 
 void fetch_cpu_name(char *cpu_name) {
     NULL_RETURN(cpu_name);
-    strncpy(cpu_name, "Unknown", BUFFERSIZE);
+    strncpy(cpu_name, DEFAULTSTRING, BUFFERSIZE);
 
     FILE *f = fopen("/proc/cpuinfo", "r");
     if (!f)
@@ -184,7 +186,7 @@ void fetch_cpu_name(char *cpu_name) {
 
 void fetch_cpu_usage(char *cpu_usage) {
     NULL_RETURN(cpu_usage);
-    strncpy(cpu_usage, "Unknown", BUFFERSIZE);
+    strncpy(cpu_usage, DEFAULTSTRING, BUFFERSIZE);
 
     FILE *f = fopen("/proc/stat", "r");
     if (!f)
@@ -212,7 +214,7 @@ void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_c
     NULL_RETURN(gpu_name);
     for(int i=0;i<BUFFERSIZE;i++)
     {
-        strncpy(gpu_name[i], "Unknown", BUFFERSIZE);
+        strncpy(gpu_name[i], DEFAULTSTRING, BUFFERSIZE);
     }
 
     size_t currentgpu = 0;
@@ -266,7 +268,7 @@ void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_c
 
 void fetch_ram_usage(char *ram_usage) {
     NULL_RETURN(ram_usage);
-    strncpy(ram_usage, "Unknown", BUFFERSIZE);
+    strncpy(ram_usage, DEFAULTSTRING, BUFFERSIZE);
 
     FILE *f = fopen("/proc/meminfo", "r");
     if (!f)
@@ -296,7 +298,7 @@ void fetch_ram_usage(char *ram_usage) {
 
 void fetch_swap_usage(char *swap_usage) {
     NULL_RETURN(swap_usage);
-    strncpy(swap_usage, "Unknown", BUFFERSIZE);
+    strncpy(swap_usage, DEFAULTSTRING, BUFFERSIZE);
 
     FILE *f = fopen("/proc/meminfo", "r");
     if (!f)
@@ -353,8 +355,8 @@ void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][2][BUFFERSIZE], size_
     NULL_RETURN(disk_usage);
     for(int i=0;i<BUFFERSIZE;i++)
     {
-        strncpy(disk_usage[i][0], "Unknown", BUFFERSIZE);
-        strncpy(disk_usage[i][1], "Unknown", BUFFERSIZE);
+        strncpy(disk_usage[i][0], DEFAULTSTRING, BUFFERSIZE);
+        strncpy(disk_usage[i][1], DEFAULTSTRING, BUFFERSIZE);
     }
 
     FILE *f = fopen("/proc/mounts", "r");
@@ -400,7 +402,7 @@ void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][2][BUFFERSIZE], size_
 
 void fetch_process_count(char *process_count) {
     NULL_RETURN(process_count);
-    strncpy(process_count, "Unknown", BUFFERSIZE);
+    strncpy(process_count, DEFAULTSTRING, BUFFERSIZE);
     char buffer[BUFFERSIZE] = { 0 };
     
     FILE *f = popen("ps -aux | wc -l", "r");
@@ -412,7 +414,7 @@ void fetch_process_count(char *process_count) {
 
 void fetch_uptime(char *uptime) {
     NULL_RETURN(uptime);
-    strncpy(uptime, "Unknown", BUFFERSIZE);
+    strncpy(uptime, DEFAULTSTRING, BUFFERSIZE);
 
     struct sysinfo data;
     if (!sysinfo(&data)) {
@@ -425,7 +427,7 @@ void fetch_uptime(char *uptime) {
 
 void fetch_battery_charge(char *battery_charge) {
     NULL_RETURN(battery_charge);
-    strncpy(battery_charge, "Unknown", BUFFERSIZE);
+    strncpy(battery_charge, DEFAULTSTRING, BUFFERSIZE);
 
     FILE *f = fopen("/sys/class/power_supply/BAT0/capacity", "r");
     if (!f)
