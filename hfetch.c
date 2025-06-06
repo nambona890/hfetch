@@ -324,26 +324,28 @@ void fetch_swap_usage(char *swap_usage) {
     fclose(f);
 }
 
-void fetch_disk_usage(char *disk_usage, const char* vfspath, const char* devpath) {
+void fetch_disk_usage(char disk_usage[2][256], const char* vfspath, const char* devpath) {
     NULL_RETURN(disk_usage);
 
     struct statvfs data;
     if (!statvfs(vfspath, &data)) {
         size_t total_bytes = data.f_frsize * data.f_blocks;
         size_t used_bytes = total_bytes - data.f_frsize * data.f_bfree;
-
-        snprintf(disk_usage, BUFFERSIZE,
-            "%.1fGB / %.1fGB (%.0f%%) - %s at %s", 
-            (double)used_bytes / 1024 / 1024 / 1024, 
-            (double)total_bytes / 1024 / 1024 / 1024,
-            (double)used_bytes * 100 / total_bytes,
+        snprintf(disk_usage[0], BUFFERSIZE,
+            "%s at %s",
             devpath,
             vfspath
+        );
+        snprintf(disk_usage[1], BUFFERSIZE,
+            "%.1fGB / %.1fGB (%.0f%%)", 
+            (double)used_bytes / 1024 / 1024 / 1024, 
+            (double)total_bytes / 1024 / 1024 / 1024,
+            (double)used_bytes * 100 / total_bytes
         );
     }
 }
 
-void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][BUFFERSIZE], size_t* mount_count)
+void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][2][BUFFERSIZE], size_t* mount_count)
 {
     NULL_RETURN(mount_count);
     size_t mc = 0;
@@ -351,7 +353,8 @@ void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][BUFFERSIZE], size_t* 
     NULL_RETURN(disk_usage);
     for(int i=0;i<BUFFERSIZE;i++)
     {
-        strncpy(disk_usage[i], "Unknown", BUFFERSIZE);
+        strncpy(disk_usage[i][0], "Unknown", BUFFERSIZE);
+        strncpy(disk_usage[i][1], "Unknown", BUFFERSIZE);
     }
 
     FILE *f = fopen("/proc/mounts", "r");
@@ -515,23 +518,26 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "%s" COLOR_RESET "@" COLOR_CYAN "%s" COLOR_RESET, line++, column, stats.user_name, stats.host_name);
     printf(POS, line++, column); 
     draw_line(namelen);
-    printf(POS COLOR_CYAN "Datetime: " COLOR_RESET " %s", line++, column, stats.datetime);
-    printf(POS COLOR_CYAN "OS:       " COLOR_RESET " %s", line++, column, stats.os_name);
-    printf(POS COLOR_CYAN "Kernel:   " COLOR_RESET " %s", line++, column, stats.kernel_version);
-    printf(POS COLOR_CYAN "Desktop:  " COLOR_RESET " %s", line++, column, stats.desktop_name);
-    printf(POS COLOR_CYAN "Shell:    " COLOR_RESET " %s", line++, column, stats.shell_name);
-    printf(POS COLOR_CYAN "Terminal: " COLOR_RESET " %s", line++, column, stats.terminal_name);
-    printf(POS COLOR_CYAN "CPU:      " COLOR_RESET " %s", line++, column, stats.cpu_name);
-    printf(POS COLOR_CYAN "CPU Usage:" COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
+    printf(POS COLOR_CYAN "Datetime:  " COLOR_RESET " %s", line++, column, stats.datetime);
+    printf(POS COLOR_CYAN "OS:        " COLOR_RESET " %s", line++, column, stats.os_name);
+    printf(POS COLOR_CYAN "Kernel:    " COLOR_RESET " %s", line++, column, stats.kernel_version);
+    printf(POS COLOR_CYAN "Desktop:   " COLOR_RESET " %s", line++, column, stats.desktop_name);
+    printf(POS COLOR_CYAN "Shell:     " COLOR_RESET " %s", line++, column, stats.shell_name);
+    printf(POS COLOR_CYAN "Terminal:  " COLOR_RESET " %s", line++, column, stats.terminal_name);
+    printf(POS COLOR_CYAN "CPU:       " COLOR_RESET " %s", line++, column, stats.cpu_name);
+    printf(POS COLOR_CYAN "CPU Usage: " COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
     for(int i=0;i<stats.gpu_count;i++)
-        printf(POS COLOR_CYAN "GPU:      " COLOR_RESET " %s  ", line++, column, stats.gpu_names[i]);
-    printf(POS COLOR_CYAN "Memory:   " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
-    printf(POS COLOR_CYAN "Swap:     " COLOR_RESET " %s   ", line++, column, stats.swap_usage);
+        printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s", line++, column, stats.gpu_names[i]);
+    printf(POS COLOR_CYAN "Memory:    " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
+    printf(POS COLOR_CYAN "Swap:      " COLOR_RESET " %s   ", line++, column, stats.swap_usage);
     for(int i=0;i<stats.mount_count;i++)
-        printf(POS COLOR_CYAN "Disk:     " COLOR_RESET " %s  ", line++, column, stats.disk_usage[i]);
-    printf(POS COLOR_CYAN "Processes:" COLOR_RESET " %s    ", line++, column, stats.process_count);
-    printf(POS COLOR_CYAN "Uptime:   " COLOR_RESET " %s", line++, column, stats.uptime);
-    printf(POS COLOR_CYAN "Battery:  " COLOR_RESET " %s   ", line++, column, stats.battery_charge);
+    {
+        printf(POS COLOR_CYAN "Disk:      " COLOR_RESET " %s", line++, column, stats.disk_usage[i][0]);
+        printf(POS COLOR_CYAN "Disk Usage:" COLOR_RESET " %s  ", line++, column, stats.disk_usage[i][1]);
+    }
+    printf(POS COLOR_CYAN "Processes: " COLOR_RESET " %s    ", line++, column, stats.process_count);
+    printf(POS COLOR_CYAN "Uptime:    " COLOR_RESET " %s", line++, column, stats.uptime);
+    printf(POS COLOR_CYAN "Battery:   " COLOR_RESET " %s   ", line++, column, stats.battery_charge);
 }
 
 void handle_exit(int signal) {

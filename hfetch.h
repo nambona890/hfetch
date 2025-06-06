@@ -34,7 +34,7 @@ typedef struct system_stats {
          process_count[BUFFERSIZE],
          uptime[BUFFERSIZE],
          battery_charge[BUFFERSIZE],
-         disk_usage[BUFFERSIZE][BUFFERSIZE],
+         disk_usage[BUFFERSIZE][2][BUFFERSIZE],
          gpu_names[BUFFERSIZE][BUFFERSIZE];
     size_t mount_count,gpu_count;
     struct
