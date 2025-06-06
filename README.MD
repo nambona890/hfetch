@@ -14,6 +14,27 @@ If you use an Arch-based system you can install it from the [AUR](https://aur.ar
 
 hfetch has no configuration files, so if you want to remove/rearrange the outputs you will need to edit the prints_stats function and recompile the program.
 
+# Features
+
+* Date and time
+* OS name
+* Kernel version
+* Desktop name and type
+* Shell
+* Terminal
+* CPU name and usage
+* GPU name
+  * Requires an AMD/NVIDIA GPU with the appropriate optional dependencies.
+* Memory usage
+* Swap usage
+* Partition mount points
+* Partition usage
+* Number of processes
+* Uptime
+* Battery charge
+  * Only displays if your PC uses a battery.
+
+
 # Command line options
 
 * -ndu
