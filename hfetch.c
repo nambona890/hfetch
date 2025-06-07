@@ -25,7 +25,9 @@
 // CPU usage [x]
 // Memory [x]
 // Swap [x]
-// Disk [x]
+// Disks [x]
+// Disk mount points [x]
+// GPUs [x] (only with amdgpu_top and nvidia-smi)
 // Processes [x]
 // Uptime [x]
 // Battery [x]
