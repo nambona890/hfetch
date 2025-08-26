@@ -212,11 +212,13 @@ void fetch_cpu_usage(char *cpu_usage) {
     fclose(f);
 }
 
-void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_count) {
-    NULL_RETURN(gpu_name);
+void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* gpu_count) {
+    NULL_RETURN(gpu_stats);
     for(int i=0;i<BUFFERSIZE;i++)
     {
-        strncpy(gpu_name[i], DEFAULTSTRING, BUFFERSIZE);
+        strncpy(gpu_stats[i][0], DEFAULTSTRING, BUFFERSIZE);
+        strncpy(gpu_stats[i][1], DEFAULTSTRING, BUFFERSIZE);
+        strncpy(gpu_stats[i][2], DEFAULTSTRING, BUFFERSIZE);
     }
 
     size_t currentgpu = 0;
@@ -231,20 +233,66 @@ void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_c
             fread(buffer,1,BUFFERSIZE,f);
             append_dynamic_string(&amdgpu_top_output,buffer);
         }
-        const char beginning_string[] = "device_name: \"";
-        const char end_string[] = "\",";
+        const char name_beginning_string[] = "device_name: \"";
+        const char name_end_string[] = "\",";
+		const char vramusage_beginning_string[] = ": usage";
+		const char vramtotal_beginning_string[] = " total";
+		const char vramtotal_end_string[] = "MiB";
         char* amdgpu_top_string_iterator = amdgpu_top_output.str;
-        while(amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,beginning_string))
+        while(amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,name_beginning_string))
         {
-            amdgpu_top_string_iterator+=sizeof(beginning_string)-1;
-            const char* amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,end_string);
-            strncpy(gpu_name[currentgpu],amdgpu_top_string_iterator,(size_t)(amdgpu_top_substr_end-amdgpu_top_string_iterator));
+			char tempstr[64] = {0};
+			int i;
+
+			//get name
+            amdgpu_top_string_iterator+=sizeof(name_beginning_string)-1;
+            char* amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,name_end_string);
+            strncpy(gpu_stats[currentgpu][0],amdgpu_top_string_iterator,(size_t)(amdgpu_top_substr_end-amdgpu_top_string_iterator));
+
+			//get used vram
+			amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,vramusage_beginning_string);
+            amdgpu_top_string_iterator+=sizeof(vramusage_beginning_string)-1;
+			amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,vramtotal_beginning_string);
+			i=0;
+			while(*amdgpu_top_string_iterator != ',')
+			{
+				if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
+				{
+					tempstr[i++] = *amdgpu_top_string_iterator;
+				}
+				amdgpu_top_string_iterator++;
+			}
+			tempstr[i] = 0;
+			double usage = (double)atoi(tempstr);
+			usage/=1024.;
+			sprintf(tempstr,"%.2fGB / ",usage);
+			strcpy(gpu_stats[currentgpu][1],tempstr);
+
+			//get total vram
+			amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,vramtotal_beginning_string);
+            amdgpu_top_string_iterator+=sizeof(vramtotal_beginning_string);
+			amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,vramtotal_end_string);
+			i=0;
+			while(*amdgpu_top_string_iterator != '(')
+			{
+				if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
+				{
+					tempstr[i++] = *amdgpu_top_string_iterator;
+				}
+				amdgpu_top_string_iterator++;
+			}
+			tempstr[i] = 0;
+			double total = (double)atoi(tempstr);
+			total/=1024.;
+			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
+			strcat(gpu_stats[currentgpu][1],tempstr);
+			
             currentgpu++;
         }
     }
     fclose(f);
     
-    f = popen("nvidia-smi -L", "r");
+    f = popen("nvidia-smi --query-gpu=name,memory.used,memory.total", "r");
     if (f)
     {
         dynamic_string nvidia_smi_output = new_dynamic_string("");
@@ -255,12 +303,50 @@ void fetch_gpu_name_multiple(char gpu_name[BUFFERSIZE][BUFFERSIZE],size_t* gpu_c
             append_dynamic_string(&nvidia_smi_output,buffer);
         }
         char* nvidia_string_iterator = nvidia_smi_output.str;
-        while(nvidia_string_iterator = strstr(nvidia_string_iterator,": "))
+		const char* separator_string = ", ";
+        while(nvidia_string_iterator = strstr(nvidia_string_iterator,"NVIDIA"))
         {
-            nvidia_string_iterator+=2;
-            const char* nvidia_substr_end = strstr(nvidia_string_iterator," (UUID:");
-            strncpy(gpu_name[currentgpu],nvidia_string_iterator,(size_t)(nvidia_substr_end-nvidia_string_iterator));
-            nvidia_string_iterator = strstr(nvidia_string_iterator,"\n");
+			char tempstr[64] = {0};
+			int i;
+
+			//get name
+            char* nvidia_substr_end = strstr(nvidia_string_iterator,separator_string);
+            strncpy(gpu_stats[currentgpu][0],nvidia_string_iterator,(size_t)(nvidia_substr_end-nvidia_string_iterator));
+
+			//get used vram
+			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
+			i=0;
+			while(*nvidia_string_iterator != 'M')
+			{
+				if(*nvidia_string_iterator >= '0' && *nvidia_string_iterator <= '9')
+				{
+					tempstr[i++] = *nvidia_string_iterator;
+				}
+				nvidia_string_iterator++;
+			}
+			tempstr[i] = 0;
+			double usage = (double)atoi(tempstr);
+			usage/=1024.;
+			sprintf(tempstr,"%.2fGB / ",usage);
+			strcpy(gpu_stats[currentgpu][1],tempstr);
+
+			//get total vram
+			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
+			i=0;
+			while(*nvidia_string_iterator != 'M')
+			{
+				if(*nvidia_string_iterator >= '0' && *nvidia_string_iterator <= '9')
+				{
+					tempstr[i++] = *nvidia_string_iterator;
+				}
+				nvidia_string_iterator++;
+			}
+			tempstr[i] = 0;
+			double total = (double)atoi(tempstr);
+			total/=1024.;
+			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
+			strcat(gpu_stats[currentgpu][1],tempstr);
+
             currentgpu++;
         }
     }
@@ -459,10 +545,10 @@ void fetch_stats(system_stats *stats) {
     fetch_ram_usage(stats->ram_usage);
     fetch_swap_usage(stats->swap_usage);
     fetch_disk_usage_multiple(stats->disk_usage,&stats->mount_count);
-    fetch_gpu_name_multiple(stats->gpu_names,&stats->gpu_count);
     fetch_process_count(stats->process_count);
     fetch_uptime(stats->uptime);
     fetch_battery_charge(stats->battery_charge);
+    fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
 }
 
 void update_dynamic_stats(system_stats *stats) {
@@ -472,7 +558,8 @@ void update_dynamic_stats(system_stats *stats) {
     fetch_swap_usage(stats->swap_usage);
     fetch_process_count(stats->process_count);
     fetch_uptime(stats->uptime);
-    fetch_battery_charge(stats->battery_charge);    
+    fetch_battery_charge(stats->battery_charge);
+    fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
 }
 
 void get_terminal_size(int *columns, int *lines) {
@@ -531,7 +618,10 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "CPU:       " COLOR_RESET " %s", line++, column, stats.cpu_name);
     printf(POS COLOR_CYAN "CPU Usage: " COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
     for(int i=0;i<stats.gpu_count;i++)
-        printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s", line++, column, stats.gpu_names[i]);
+	{
+        printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s", line++, column, stats.gpu_stats[i][0]);
+        printf(POS COLOR_CYAN "GPU VRAM:  " COLOR_RESET " %s", line++, column, stats.gpu_stats[i][1]);
+	}
     printf(POS COLOR_CYAN "Memory:    " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
     printf(POS COLOR_CYAN "Swap:      " COLOR_RESET " %s   ", line++, column, stats.swap_usage);
     for(int i=0;i<stats.mount_count;i++)

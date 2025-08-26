@@ -1,4 +1,4 @@
-CFLAGS ?= -O3
+CFLAGS ?= -O3 -march=native
 
 hfetch: hfetch.c
 	${CC} ${CFLAGS} $^ -o $@

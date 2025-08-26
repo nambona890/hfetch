@@ -39,7 +39,7 @@ typedef struct system_stats {
          uptime[BUFFERSIZE],
          battery_charge[BUFFERSIZE],
          disk_usage[BUFFERSIZE][2][BUFFERSIZE],
-         gpu_names[BUFFERSIZE][BUFFERSIZE];
+         gpu_stats[BUFFERSIZE][3][BUFFERSIZE];
     size_t mount_count,gpu_count;
     struct
     {
@@ -110,7 +110,7 @@ dynamic_string new_dynamic_string(const char* init)
     return ret_string;
 }
 
-inline void free_dynamic_string(dynamic_string* dyn_str)
+void free_dynamic_string(dynamic_string* dyn_str)
 {
     free(dyn_str->str);
 }

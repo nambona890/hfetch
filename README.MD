@@ -23,7 +23,7 @@ hfetch has no configuration files, so if you want to remove/rearrange the output
 * Shell
 * Terminal
 * CPU name and usage
-* GPU name
+* GPU name and RAM usage
   * Requires an AMD/NVIDIA GPU with the appropriate optional dependencies.
 * Memory usage
 * Swap usage
