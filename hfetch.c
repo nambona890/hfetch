@@ -552,14 +552,21 @@ void fetch_stats(system_stats *stats) {
 }
 
 void update_dynamic_stats(system_stats *stats) {
-    fetch_datetime(stats->datetime);
-    fetch_cpu_usage(stats->cpu_usage);
-    fetch_ram_usage(stats->ram_usage);
-    fetch_swap_usage(stats->swap_usage);
-    fetch_process_count(stats->process_count);
-    fetch_uptime(stats->uptime);
-    fetch_battery_charge(stats->battery_charge);
-    fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
+	system_stats tempstats = *stats;
+	
+    fetch_datetime(tempstats.datetime);
+    fetch_cpu_usage(tempstats.cpu_usage);
+    fetch_ram_usage(tempstats.ram_usage);
+    fetch_swap_usage(tempstats.swap_usage);
+    fetch_disk_usage_multiple(tempstats.disk_usage,&tempstats.mount_count);
+    fetch_process_count(tempstats.process_count);
+	fetch_uptime(tempstats.uptime);
+    fetch_battery_charge(tempstats.battery_charge);
+    fetch_gpu_stats_multiple(tempstats.gpu_stats,&tempstats.gpu_count);
+
+	pthread_mutex_lock(&stats->mutex);
+	*stats = tempstats;
+	pthread_mutex_unlock(&stats->mutex);
 }
 
 void get_terminal_size(int *columns, int *lines) {
@@ -650,6 +657,18 @@ void handle_exit(int signal) {
     exit(0);
 }
 
+volatile char stopprog = 0;
+
+void* handle_dynamic_stats(void* data)
+{
+	while(!stopprog)
+	{
+		update_dynamic_stats((system_stats*)data);
+		usleep(200000);
+	}
+	return NULL;
+}
+
 int main(int argc, char** argv) {
     signal(SIGINT, handle_exit);
     system("tput civis");
@@ -661,6 +680,8 @@ int main(int argc, char** argv) {
     }
 
     fetch_stats(&sysstats);
+	pthread_t dynamicstats;
+	pthread_create(&dynamicstats,NULL,handle_dynamic_stats,&sysstats);
 ///*
     size_t frame = 0;
     int prev_columns = 0, prev_lines = 0;
@@ -673,15 +694,20 @@ int main(int argc, char** argv) {
             prev_lines = lines;
         }
 
-        print_stats(sysstats);
+		if(pthread_mutex_trylock(&sysstats.mutex))
+		{
+        	print_stats(sysstats);
+			pthread_mutex_unlock(&sysstats.mutex);
+		}
         print_logo();
         fflush(stdout);
-        if (frame % (FPS / 4) == 0) // update stats every 0.25s
-            update_dynamic_stats(&sysstats);
+        /* if (frame % (FPS / 4) == 0) // update stats every 0.25s
+            update_dynamic_stats(&sysstats); */
         usleep(1000000 / FPS);
         frame++;
     }
-
+	stopprog = 1;
+	pthread_join(dynamicstats,NULL);
     handle_exit(0);
 //*/
     return 0;

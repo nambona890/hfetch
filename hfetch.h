@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #define BUFFERSIZE 256 // Default length for all used buffers
 #define PADDING 44     // Cliorb size
@@ -45,6 +46,7 @@ typedef struct system_stats {
     {
         BOOL disable_print_disk_usage : 1;
     } flags;
+	pthread_mutex_t mutex;
 } system_stats;
 
 typedef struct animation_object {
