@@ -49,7 +49,7 @@ print(convert_frame("./images/frame01.png"))
 #"""
 
 #"""
-frame_paths = [f"./images/frame{i:02}.png" for i in range(1, 30)]
+frame_paths = [f"./images/frame{i:02}.png" for i in range(1, 31)]
 
 cfile = open("../cliorb.h", "w")
 
@@ -58,7 +58,7 @@ cfile.write('#define CLIORB_H\n')
 cfile.write('#include "hfetch.h"\n\n')
 cfile.write('animation_object cliorb = {\n')
 cfile.write('    .current_frame = 0,\n')
-cfile.write('    .frame_count = 29,\n')
+cfile.write('    .frame_count = 30,\n')
 cfile.write('    .frames = {\n')
 
 max_len = 0

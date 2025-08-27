@@ -8,7 +8,7 @@
 
 #define BUFFERSIZE 256 // Default length for all used buffers
 #define PADDING 44     // Cliorb size
-#define FPS 20         // Speed of animation/stats reloading
+#define FPS 15         // Speed of animation/stats reloading
 
 // Escape codes for drawing 
 #define CLEARSCREEN "\033[2J"

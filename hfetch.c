@@ -38,7 +38,7 @@ static system_stats sysstats = { 0 };
 
 char *yield_frame(animation_object *ao) {
     char *frame = ao->frames[ao->current_frame];
-    ao->current_frame = (ao->current_frame + 1) % ao->frame_count;
+    ao->current_frame = (ao->current_frame + 1) % (ao->frame_count);
     return frame;
 }
 
