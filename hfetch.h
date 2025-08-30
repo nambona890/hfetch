@@ -76,7 +76,7 @@ void reserve_dynamic_string(dynamic_string* dyn_str, size_t n)
     }
     if(reserve_more)
     {
-        dyn_str = realloc(dyn_str->str,dyn_str->reserved_size);
+        dyn_str->str = realloc(dyn_str->str,dyn_str->reserved_size);
     }
 }
 

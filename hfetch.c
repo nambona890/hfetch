@@ -289,6 +289,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			
             currentgpu++;
         }
+		free_dynamic_string(&amdgpu_top_output);
     }
     fclose(f);
     
@@ -349,6 +350,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 
             currentgpu++;
         }
+		free_dynamic_string(&nvidia_smi_output);
     }
     *gpu_count = currentgpu;
     fclose(f);
@@ -658,6 +660,7 @@ void handle_exit(int signal) {
 }
 
 volatile char stopprog = 0;
+
 
 void* handle_dynamic_stats(void* data)
 {
