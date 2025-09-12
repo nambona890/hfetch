@@ -273,7 +273,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
             amdgpu_top_string_iterator+=sizeof(vramtotal_beginning_string);
 			amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,vramtotal_end_string);
 			i=0;
-			while(*amdgpu_top_string_iterator != '(')
+			while(*amdgpu_top_string_iterator != '(' && *amdgpu_top_string_iterator != ')')
 			{
 				if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
 				{
