@@ -218,12 +218,11 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
     {
         strncpy(gpu_stats[i][0], DEFAULTSTRING, BUFFERSIZE);
         strncpy(gpu_stats[i][1], DEFAULTSTRING, BUFFERSIZE);
-        strncpy(gpu_stats[i][2], DEFAULTSTRING, BUFFERSIZE);
     }
 
     size_t currentgpu = 0;
 
-    FILE *f = popen("amdgpu_top -d", "r");
+    FILE *f = popen("amdgpu_top -d -gm", "r");
     if (f)
     {
         dynamic_string amdgpu_top_output = new_dynamic_string("");
@@ -238,6 +237,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 		const char vramusage_beginning_string[] = ": usage";
 		const char vramtotal_beginning_string[] = " total";
 		const char vramtotal_end_string[] = "MiB";
+		const char gpuactivity_beginning_string[] = "average_gfx_activity: ";
         char* amdgpu_top_string_iterator = amdgpu_top_output.str;
         while(amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,name_beginning_string))
         {
@@ -287,13 +287,33 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
 			strcat(gpu_stats[currentgpu][1],tempstr);
 			
+			//get gpu activity, sometimes this fails idk why
+			if(strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string))
+			{
+				amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string);
+				amdgpu_top_string_iterator+=sizeof(gpuactivity_beginning_string)-1;
+				i=1;
+				strcpy(tempstr,"(   ");
+				while(*amdgpu_top_string_iterator != ',')
+				{
+					if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
+					{
+						tempstr[i++] = *amdgpu_top_string_iterator;
+					}
+					amdgpu_top_string_iterator++;
+				}
+				tempstr[i] = 0;
+				strcat(tempstr,"\%)  ");
+				strcpy(gpu_stats[currentgpu][2],tempstr);
+			}
+			
             currentgpu++;
         }
 		free_dynamic_string(&amdgpu_top_output);
     }
     fclose(f);
     
-    f = popen("nvidia-smi --query-gpu=name,memory.used,memory.total", "r");
+    f = popen("nvidia-smi --query-gpu=name,memory.used,memory.total,utilization.gpu", "r");
     if (f)
     {
         dynamic_string nvidia_smi_output = new_dynamic_string("");
@@ -347,6 +367,23 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			total/=1024.;
 			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
 			strcat(gpu_stats[currentgpu][1],tempstr);
+
+			//get gpu activity
+			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
+			i=1;
+			strcpy(tempstr,"(   ");
+			while(*nvidia_string_iterator != '\%')
+			{
+				if(*nvidia_string_iterator >= '0' && *nvidia_string_iterator <= '9')
+				{
+					tempstr[i++] = *nvidia_string_iterator;
+				}
+				nvidia_string_iterator++;
+			}
+			tempstr[i] = 0;
+			strcat(tempstr,"\%)  ");
+			strcpy(gpu_stats[currentgpu][2],tempstr);
+
 
             currentgpu++;
         }
@@ -628,7 +665,7 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "CPU Usage: " COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
     for(int i=0;i<stats.gpu_count;i++)
 	{
-        printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s", line++, column, stats.gpu_stats[i][0]);
+        printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s %s", line++, column, stats.gpu_stats[i][0], stats.gpu_stats[i][2]);
         printf(POS COLOR_CYAN "GPU VRAM:  " COLOR_RESET " %s", line++, column, stats.gpu_stats[i][1]);
 	}
     printf(POS COLOR_CYAN "Memory:    " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
