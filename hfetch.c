@@ -545,10 +545,11 @@ void fetch_uptime(char *uptime) {
 
     struct sysinfo data;
     if (!sysinfo(&data)) {
-        int h = data.uptime / 3600,
+        int d = data.uptime / 86400,
+			h = (data.uptime / 3600) % 24,
             m = data.uptime % 3600 / 60,
             s = data.uptime % 60;
-        snprintf(uptime, BUFFERSIZE, "%02d:%02d:%02d", h, m, s);
+        snprintf(uptime, BUFFERSIZE, "%02d:%02d:%02d:%02d",d, h, m, s);
     }
 }
 
