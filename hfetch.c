@@ -9,7 +9,7 @@
 #include <sys/sysinfo.h>
 #include <sys/statvfs.h>
 
-#include "cliorb.h" // Cliorb animation object 
+#include "cliorb.h" // Cliorb animation object
 #include "hfetch.h"
 
 // IMPLEMENTED:
@@ -32,7 +32,7 @@
 // Uptime [x]
 // Battery [x]
 
-static system_stats sysstats = { 0 }; 
+static system_stats sysstats = { 0 };
 
 #define DEFAULTSTRING "Unknown"
 
@@ -76,11 +76,11 @@ void fetch_datetime(char *datetime) {
 void fetch_os_name(char *os_name) {
     NULL_RETURN(os_name);
     strncpy(os_name, DEFAULTSTRING, BUFFERSIZE);
-    
+
     FILE *f = fopen("/etc/os-release", "r");
     if (!f)
         return;
-    
+
     char buffer[BUFFERSIZE] = { 0 };
     char *tmp = NULL;
     while (fgets(buffer, BUFFERSIZE, f) != NULL) {
@@ -94,7 +94,7 @@ void fetch_os_name(char *os_name) {
             break;
         }
     }
-    
+
     fclose(f);
 }
 
@@ -118,7 +118,7 @@ void fetch_desktop_name(char *desktop_name) {
 
     char *desktop = getenv("XDG_SESSION_DESKTOP");
     char *session = getenv("XDG_SESSION_TYPE");
-    
+
     if (desktop && session) {
         snprintf(desktop_name, BUFFERSIZE, "%s (%s)", desktop, session);
     }
@@ -130,7 +130,7 @@ void fetch_shell_name(char *shell_name) {
 
     char *value = getenv("SHELL");
     value = strrchr(value, '/');
-    if (value) 
+    if (value)
         strncpy(shell_name, value + 1, BUFFERSIZE);
 }
 
@@ -151,7 +151,7 @@ void fetch_terminal_name(char *terminal_name) {
         return;
     }
     fclose(f);
-    
+
     snprintf(buffer, BUFFERSIZE, "/proc/%d/comm", ppid);
     f = fopen(buffer, "r");
     if (!f)
@@ -170,7 +170,7 @@ void fetch_cpu_name(char *cpu_name) {
     FILE *f = fopen("/proc/cpuinfo", "r");
     if (!f)
         return;
-    
+
     char buffer[BUFFERSIZE] = { 0 };
     char *tmp = NULL;
     while (fgets(buffer, BUFFERSIZE, f) != NULL) {
@@ -182,7 +182,7 @@ void fetch_cpu_name(char *cpu_name) {
             break;
         }
     }
-    
+
     fclose(f);
 }
 
@@ -198,17 +198,17 @@ void fetch_cpu_usage(char *cpu_usage) {
     char buffer[BUFFERSIZE];
     if (fgets(buffer, BUFFERSIZE, f) != NULL) {
         size_t user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-        sscanf(buffer, "cpu %zd %zd %zd %zd %zd %zd %zd %zd %zd %zd", 
+        sscanf(buffer, "cpu %zd %zd %zd %zd %zd %zd %zd %zd %zd %zd",
             &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice
         );
         size_t total = user + nice + system + idle + iowait + irq + softirq + steal + guest + guest_nice;
-        snprintf(cpu_usage, BUFFERSIZE, 
+        snprintf(cpu_usage, BUFFERSIZE,
             "%.0f%%", (1 - (double)(idle - prev_idle) / (total - prev_total)) * 100
         );
         prev_total = total;
         prev_idle = idle;
     }
-        
+
     fclose(f);
 }
 
@@ -286,7 +286,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			total/=1024.;
 			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
 			strcat(gpu_stats[currentgpu][1],tempstr);
-			
+
 			//get gpu activity, sometimes this fails idk why
 			if(strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string))
 			{
@@ -306,13 +306,13 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 				strcat(tempstr,"\%)  ");
 				strcpy(gpu_stats[currentgpu][2],tempstr);
 			}
-			
+
             currentgpu++;
         }
 		free_dynamic_string(&amdgpu_top_output);
     }
     fclose(f);
-    
+
     f = popen("nvidia-smi --query-gpu=name,memory.used,memory.total,utilization.gpu", "r");
     if (f)
     {
@@ -400,26 +400,26 @@ void fetch_ram_usage(char *ram_usage) {
     FILE *f = fopen("/proc/meminfo", "r");
     if (!f)
         return;
-        
+
     char buffer[BUFFERSIZE] = { 0 };
     size_t total_kB = 0, used_kB = 0;
     while (fgets(buffer, BUFFERSIZE, f) != NULL) {
-        if (total_kB && used_kB) 
+        if (total_kB && used_kB)
             break;
         sscanf(buffer, "MemTotal: %zd kB", &total_kB);
         sscanf(buffer, "MemAvailable: %zd kB", &used_kB);
     }
-    
+
     if (total_kB && used_kB) {
         used_kB = total_kB - used_kB;
-        snprintf(ram_usage, BUFFERSIZE, 
-            "%.2fGB / %.2fGB (%.0f%%)", 
+        snprintf(ram_usage, BUFFERSIZE,
+            "%.2fGB / %.2fGB (%.0f%%)",
             (double)used_kB / 1024 / 1024,
             (double)total_kB / 1024 / 1024,
-            (double)used_kB / total_kB * 100 
+            (double)used_kB / total_kB * 100
         );
     }
-    
+
     fclose(f);
 }
 
@@ -430,20 +430,20 @@ void fetch_swap_usage(char *swap_usage) {
     FILE *f = fopen("/proc/meminfo", "r");
     if (!f)
         return;
-        
+
     char buffer[BUFFERSIZE] = { 0 };
     size_t total_kB = 0, used_kB = 0;
     while (fgets(buffer, BUFFERSIZE, f) != NULL) {
-        if (total_kB && used_kB) 
+        if (total_kB && used_kB)
             break;
         sscanf(buffer, "SwapTotal: %zd kB", &total_kB);
         sscanf(buffer, "SwapFree: %zd kB", &used_kB);
     }
-    
+
     if (total_kB && used_kB) {
         used_kB = total_kB - used_kB;
-        snprintf(swap_usage, BUFFERSIZE, 
-            "%.2fGB / %.2fGB (%.0f%%)", 
+        snprintf(swap_usage, BUFFERSIZE,
+            "%.2fGB / %.2fGB (%.0f%%)",
             (double)used_kB / 1024 / 1024,
             (double)total_kB / 1024 / 1024,
             (double)used_kB * 100 / total_kB
@@ -466,8 +466,8 @@ void fetch_disk_usage(char disk_usage[2][256], const char* vfspath, const char* 
             vfspath
         );
         snprintf(disk_usage[1], BUFFERSIZE,
-            "%.1fGB / %.1fGB (%.0f%%)", 
-            (double)used_bytes / 1024 / 1024 / 1024, 
+            "%.1fGB / %.1fGB (%.0f%%)",
+            (double)used_bytes / 1024 / 1024 / 1024,
             (double)total_bytes / 1024 / 1024 / 1024,
             (double)used_bytes * 100 / total_bytes
         );
@@ -499,28 +499,53 @@ void fetch_disk_usage_multiple(char disk_usage[BUFFERSIZE][2][BUFFERSIZE], size_
         {
             append_dynamic_string(&mount_list,buffer);
         }
-        char* current_mount = strstr(mount_list.str,"\n/dev/sd");
-        while(current_mount != NULL)
-        {
-            current_mount++;
+
+        // Look for all block devices (sd, vd, nvme, hd, etc.)
+        char* search_pos = mount_list.str;
+        while ((search_pos = strstr(search_pos, "\n/dev/")) != NULL) {
+            search_pos++; // Skip the newline
+
+            // Check if this is a block device we want to include
+            // Skip loop devices, ram disks, and other virtual devices
+            if (strncmp(search_pos, "/dev/loop", 9) == 0 ||
+                strncmp(search_pos, "/dev/ram", 8) == 0 ||
+                strncmp(search_pos, "/dev/dm-", 8) == 0 ||
+                strncmp(search_pos, "/dev/mapper/", 12) == 0) {
+                search_pos++;
+                continue;
+            }
+
+            // Extract device name
             char dev[BUFFERSIZE] = {0};
-            for(int i=0;(i<BUFFERSIZE)&& !(current_mount[i]==' '&&current_mount[i-1]!='\\');i++)
+            for(int i=0;(i<BUFFERSIZE)&& !(search_pos[i]==' '&&search_pos[i-1]!='\\');i++)
             {
-                dev[i] = current_mount[i];
+                dev[i] = search_pos[i];
             }
+
+            // Extract mount point
             char mount[BUFFERSIZE] = {0};
-            char* mount_loc = strstr(current_mount, " /");
-            mount_loc++;
-            for(int i=0;(i<BUFFERSIZE)&&(mount_loc[i]!=' ');i++)
-            {
-                mount[i] = mount_loc[i];
+            char* mount_loc = strstr(search_pos, " /");
+            if (mount_loc != NULL) {
+                mount_loc++;
+                for(int i=0;(i<BUFFERSIZE)&&(mount_loc[i]!=' ');i++)
+                {
+                    mount[i] = mount_loc[i];
+                }
+
+                // Only include real filesystem mount points (skip /proc, /sys, /dev, etc.)
+                if (strncmp(mount, "/proc", 5) != 0 &&
+                    strncmp(mount, "/sys", 4) != 0 &&
+                    strncmp(mount, "/dev", 4) != 0 &&
+                    strncmp(mount, "/run", 4) != 0 &&
+                    strncmp(mount, "/tmp", 4) != 0) {
+                    fetch_disk_usage(disk_usage[mc], mount, dev);
+                    mc++;
+                }
             }
-            current_mount = strstr(current_mount,"\n/dev/sd");
-            fetch_disk_usage(disk_usage[mc],mount,dev);
-            mc++;
+            search_pos++;
         }
     }
-    
+
 
     free_dynamic_string(&mount_list);
     fclose(f);
@@ -531,7 +556,7 @@ void fetch_process_count(char *process_count) {
     NULL_RETURN(process_count);
     strncpy(process_count, DEFAULTSTRING, BUFFERSIZE);
     char buffer[BUFFERSIZE] = { 0 };
-    
+
     FILE *f = popen("ps -aux | wc -l", "r");
     if (fgets(buffer, BUFFERSIZE, f) != NULL) {
         strncpy(process_count, buffer, BUFFERSIZE);
@@ -560,7 +585,7 @@ void fetch_battery_charge(char *battery_charge) {
     FILE *f = fopen("/sys/class/power_supply/BAT0/capacity", "r");
     if (!f)
         return;
-    
+
     char buffer[BUFFERSIZE] = { 0 };
     fgets(buffer, BUFFERSIZE, f);
     strncpy(battery_charge, buffer, BUFFERSIZE);
@@ -593,7 +618,7 @@ void fetch_stats(system_stats *stats) {
 
 void update_dynamic_stats(system_stats *stats) {
 	system_stats tempstats = *stats;
-	
+
     fetch_datetime(tempstats.datetime);
     fetch_cpu_usage(tempstats.cpu_usage);
     fetch_ram_usage(tempstats.ram_usage);
@@ -613,14 +638,14 @@ void get_terminal_size(int *columns, int *lines) {
     *columns = 0; *lines = 0;
     char buffer[BUFFERSIZE] = { 0 };
     FILE *f = popen("tput cols", "r");
-    if (!f) 
+    if (!f)
         return;
     if (fgets(buffer, BUFFERSIZE, f) != NULL)
         *columns = atoi(buffer);
     pclose(f);
 
     f = popen("tput lines", "r");
-    if (!f) 
+    if (!f)
         return;
     if (fgets(buffer, BUFFERSIZE, f) != NULL)
         *lines = atoi(buffer);
@@ -649,12 +674,12 @@ void draw_line(int length) {
 }
 
 void print_stats(system_stats stats) {
-    int line = 1, 
+    int line = 1,
         column = PADDING + 2;
     int namelen = strlen(stats.user_name) + strlen(stats.host_name) + 1;
     printf(POS COLOR_RESET COLOR_CYAN "%*shfetch📚⚔️" COLOR_RESET, line++, column, (namelen - 8) / 2, "");
     printf(POS COLOR_CYAN "%s" COLOR_RESET "@" COLOR_CYAN "%s" COLOR_RESET, line++, column, stats.user_name, stats.host_name);
-    printf(POS, line++, column); 
+    printf(POS, line++, column);
     draw_line(namelen);
     printf(POS COLOR_CYAN "Datetime:  " COLOR_RESET " %s", line++, column, stats.datetime);
     printf(POS COLOR_CYAN "OS:        " COLOR_RESET " %s", line++, column, stats.os_name);
@@ -691,7 +716,7 @@ void handle_exit(int signal) {
     clear_screen(columns, lines);
     print_stats(sysstats);
     print_logo();
-    
+
     printf("\n");
     system("tput cnorm");
     exit(0);
@@ -727,11 +752,11 @@ int main(int argc, char** argv) {
     size_t frame = 0;
     int prev_columns = 0, prev_lines = 0;
     int columns, lines;
-    while (1) { 
+    while (1) {
         get_terminal_size(&columns, &lines);
         if (prev_columns != columns || prev_lines != lines) {
             clear_screen(columns, lines);
-            prev_columns = columns; 
+            prev_columns = columns;
             prev_lines = lines;
         }
 
