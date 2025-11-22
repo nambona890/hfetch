@@ -284,7 +284,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			tempstr[i] = 0;
 			double total = (double)atoi(tempstr);
 			total/=1024.;
-			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
+			sprintf(tempstr,"%.2fGB (%.0f%%)   ",total,(usage/total)*100.0);
 			strcat(gpu_stats[currentgpu][1],tempstr);
 
 			//get gpu activity, sometimes this fails idk why
@@ -293,7 +293,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 				amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string);
 				amdgpu_top_string_iterator+=sizeof(gpuactivity_beginning_string)-1;
 				i=1;
-				strcpy(tempstr,"(   ");
+				strcpy(tempstr,"(     ");
 				while(*amdgpu_top_string_iterator != ',')
 				{
 					if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
@@ -365,13 +365,13 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			tempstr[i] = 0;
 			double total = (double)atoi(tempstr);
 			total/=1024.;
-			sprintf(tempstr,"%.2fGB (%.0f%%)",total,(usage/total)*100.0);
+			sprintf(tempstr,"%.2fGB (%.0f%%)    ",total,(usage/total)*100.0);
 			strcat(gpu_stats[currentgpu][1],tempstr);
 
 			//get gpu activity
 			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
 			i=1;
-			strcpy(tempstr,"(   ");
+			strcpy(tempstr,"(     ");
 			while(*nvidia_string_iterator != '\%')
 			{
 				if(*nvidia_string_iterator >= '0' && *nvidia_string_iterator <= '9')
