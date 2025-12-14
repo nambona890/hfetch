@@ -39,6 +39,8 @@ hfetch has no configuration files, so if you want to remove/rearrange the output
 
 * -ndu
   * Disables printing of disk usage
+* -ng
+  * Disables printing of GPUs
 
 # Extras
 

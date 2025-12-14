@@ -45,6 +45,7 @@ typedef struct system_stats {
     struct
     {
         BOOL disable_print_disk_usage : 1;
+		BOOL disable_print_gpu : 1;
     } flags;
 	pthread_mutex_t mutex;
 } system_stats;
