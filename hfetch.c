@@ -621,7 +621,8 @@ void fetch_stats(system_stats *stats) {
     fetch_process_count(stats->process_count);
     fetch_uptime(stats->uptime);
     fetch_battery_charge(stats->battery_charge);
-    fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
+	if(!stats->flags.disable_print_gpu)
+    	fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
 }
 
 void update_dynamic_stats(system_stats *stats) {
