@@ -247,12 +247,15 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			//get name
             amdgpu_top_string_iterator+=sizeof(name_beginning_string)-1;
             char* amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,name_end_string);
+			if(!amdgpu_top_substr_end) goto nextgpuamd;
             strncpy(gpu_stats[currentgpu][0],amdgpu_top_string_iterator,(size_t)(amdgpu_top_substr_end-amdgpu_top_string_iterator));
 
 			//get used vram
 			amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,vramusage_beginning_string);
+			if(!amdgpu_top_string_iterator) goto nextgpuamd;
             amdgpu_top_string_iterator+=sizeof(vramusage_beginning_string)-1;
 			amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,vramtotal_beginning_string);
+			if(!amdgpu_top_substr_end) goto nextgpuamd;
 			i=0;
 			while(*amdgpu_top_string_iterator != ',')
 			{
@@ -270,8 +273,10 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 
 			//get total vram
 			amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,vramtotal_beginning_string);
+			if(!amdgpu_top_string_iterator) goto nextgpuamd;
             amdgpu_top_string_iterator+=sizeof(vramtotal_beginning_string);
 			amdgpu_top_substr_end = strstr(amdgpu_top_string_iterator,vramtotal_end_string);
+			if(!amdgpu_top_substr_end) goto nextgpuamd;
 			i=0;
 			while(*amdgpu_top_string_iterator != '(' && *amdgpu_top_string_iterator != ')')
 			{
@@ -287,27 +292,26 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			sprintf(tempstr,"%.2fGB (%.0f%%)   ",total,(usage/total)*100.0);
 			strcat(gpu_stats[currentgpu][1],tempstr);
 
-			//get gpu activity, sometimes this fails idk why
-			if(strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string))
+			//get gpu activity
+			strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string);
+			amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string);
+			amdgpu_top_string_iterator+=sizeof(gpuactivity_beginning_string)-1;
+			i=1;
+			strcpy(tempstr,"(     ");
+			while(*amdgpu_top_string_iterator != ',')
 			{
-				amdgpu_top_string_iterator = strstr(amdgpu_top_string_iterator,gpuactivity_beginning_string);
-				amdgpu_top_string_iterator+=sizeof(gpuactivity_beginning_string)-1;
-				i=1;
-				strcpy(tempstr,"(     ");
-				while(*amdgpu_top_string_iterator != ',')
+				if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
 				{
-					if(*amdgpu_top_string_iterator >= '0' && *amdgpu_top_string_iterator <= '9')
-					{
-						tempstr[i++] = *amdgpu_top_string_iterator;
-					}
-					amdgpu_top_string_iterator++;
+					tempstr[i++] = *amdgpu_top_string_iterator;
 				}
-				tempstr[i] = 0;
-				strcat(tempstr,"\%)  ");
-				strcpy(gpu_stats[currentgpu][2],tempstr);
+				amdgpu_top_string_iterator++;
 			}
-
-            currentgpu++;
+			tempstr[i] = 0;
+			strcat(tempstr,"\%)  ");
+			strcpy(gpu_stats[currentgpu][2],tempstr);
+			
+			nextgpuamd:
+            	currentgpu++;
         }
 		free_dynamic_string(&amdgpu_top_output);
     }
@@ -325,17 +329,19 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
         }
         char* nvidia_string_iterator = nvidia_smi_output.str;
 		const char* separator_string = ", ";
-        while(nvidia_string_iterator = strstr(nvidia_string_iterator,"NVIDIA"))
+        while(nvidia_string_iterator = strstr(nvidia_string_iterator,"NVIDIA "))
         {
 			char tempstr[64] = {0};
 			int i;
 
 			//get name
             char* nvidia_substr_end = strstr(nvidia_string_iterator,separator_string);
+			if(!nvidia_substr_end) goto nextgpunvidia;
             strncpy(gpu_stats[currentgpu][0],nvidia_string_iterator,(size_t)(nvidia_substr_end-nvidia_string_iterator));
 
 			//get used vram
 			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
+			if(!nvidia_string_iterator) goto nextgpunvidia;
 			i=0;
 			while(*nvidia_string_iterator != 'M')
 			{
@@ -353,6 +359,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 
 			//get total vram
 			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
+			if(!nvidia_string_iterator) goto nextgpunvidia;
 			i=0;
 			while(*nvidia_string_iterator != 'M')
 			{
@@ -370,6 +377,7 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 
 			//get gpu activity
 			nvidia_string_iterator = strstr(nvidia_string_iterator,separator_string);
+			if(!nvidia_string_iterator) goto nextgpunvidia;
 			i=1;
 			strcpy(tempstr,"(     ");
 			while(*nvidia_string_iterator != '\%')
@@ -384,8 +392,8 @@ void fetch_gpu_stats_multiple(char gpu_stats[BUFFERSIZE][3][BUFFERSIZE],size_t* 
 			strcat(tempstr,"\%)  ");
 			strcpy(gpu_stats[currentgpu][2],tempstr);
 
-
-            currentgpu++;
+			nextgpunvidia:
+            	currentgpu++;
         }
 		free_dynamic_string(&nvidia_smi_output);
     }
@@ -443,7 +451,7 @@ void fetch_swap_usage(char *swap_usage) {
     if (total_kB && used_kB) {
         used_kB = total_kB - used_kB;
         snprintf(swap_usage, BUFFERSIZE,
-            "%.2fGB / %.2fGB (%.0f%%)",
+            "%.2fGB / %.2fGB (%.0f%%)  ",
             (double)used_kB / 1024 / 1024,
             (double)total_kB / 1024 / 1024,
             (double)used_kB * 100 / total_kB
@@ -466,7 +474,7 @@ void fetch_disk_usage(char disk_usage[2][256], const char* vfspath, const char* 
             vfspath
         );
         snprintf(disk_usage[1], BUFFERSIZE,
-            "%.1fGB / %.1fGB (%.0f%%)",
+            "%.1fGB / %.1fGB (%.0f%%)  ",
             (double)used_bytes / 1024 / 1024 / 1024,
             (double)total_bytes / 1024 / 1024 / 1024,
             (double)used_bytes * 100 / total_bytes
@@ -613,7 +621,8 @@ void fetch_stats(system_stats *stats) {
     fetch_process_count(stats->process_count);
     fetch_uptime(stats->uptime);
     fetch_battery_charge(stats->battery_charge);
-    fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
+	if(!stats->flags.disable_print_gpu)
+    	fetch_gpu_stats_multiple(stats->gpu_stats,&stats->gpu_count);
 }
 
 void update_dynamic_stats(system_stats *stats) {
@@ -627,7 +636,8 @@ void update_dynamic_stats(system_stats *stats) {
     fetch_process_count(tempstats.process_count);
 	fetch_uptime(tempstats.uptime);
     fetch_battery_charge(tempstats.battery_charge);
-    fetch_gpu_stats_multiple(tempstats.gpu_stats,&tempstats.gpu_count);
+	if(!stats->flags.disable_print_gpu)
+    	fetch_gpu_stats_multiple(tempstats.gpu_stats,&tempstats.gpu_count);
 
 	pthread_mutex_lock(&stats->mutex);
 	*stats = tempstats;
@@ -689,11 +699,12 @@ void print_stats(system_stats stats) {
     printf(POS COLOR_CYAN "Terminal:  " COLOR_RESET " %s", line++, column, stats.terminal_name);
     printf(POS COLOR_CYAN "CPU:       " COLOR_RESET " %s", line++, column, stats.cpu_name);
     printf(POS COLOR_CYAN "CPU Usage: " COLOR_RESET " %s  ", line++, column, stats.cpu_usage);
-    for(int i=0;i<stats.gpu_count;i++)
-	{
-        printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s %s", line++, column, stats.gpu_stats[i][0], stats.gpu_stats[i][2]);
-        printf(POS COLOR_CYAN "GPU VRAM:  " COLOR_RESET " %s", line++, column, stats.gpu_stats[i][1]);
-	}
+	if(!stats.flags.disable_print_gpu)
+		for(int i=0;i<stats.gpu_count;i++)
+		{
+			printf(POS COLOR_CYAN "GPU:       " COLOR_RESET " %s %s", line++, column, stats.gpu_stats[i][0], stats.gpu_stats[i][2]);
+			printf(POS COLOR_CYAN "GPU VRAM:  " COLOR_RESET " %s", line++, column, stats.gpu_stats[i][1]);
+		}
     printf(POS COLOR_CYAN "Memory:    " COLOR_RESET " %s   ", line++, column, stats.ram_usage);
     printf(POS COLOR_CYAN "Swap:      " COLOR_RESET " %s   ", line++, column, stats.swap_usage);
     for(int i=0;i<stats.mount_count;i++)
@@ -743,6 +754,8 @@ int main(int argc, char** argv) {
     {
         if(strcmp(argv[i],"-ndu")==0)
             sysstats.flags.disable_print_disk_usage = TRUE;
+		else if(strcmp(argv[i],"-ng")==0)
+			sysstats.flags.disable_print_gpu = TRUE;		
     }
 
     fetch_stats(&sysstats);
